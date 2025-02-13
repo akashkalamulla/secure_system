@@ -24,3 +24,20 @@ class RegisterForm(forms.ModelForm):
             self.add_error("password_confirm", "Passwords do not match.")
 
         return cleaned_data
+
+class EditUserForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'role', 'is_active']
+        labels = {
+            'username': 'Username',
+            'email': 'Email',
+            'role': 'User Role',
+            'is_active': 'Active Status',
+        }
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'role': forms.Select(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

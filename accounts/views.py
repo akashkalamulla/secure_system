@@ -1,6 +1,6 @@
 import csv
 import os
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from .forms import LoginForm
 from django.contrib.auth import get_user_model
 from accounts.models import CustomUser
@@ -11,7 +11,7 @@ from security.logs import log_failed_login
 from django.contrib.auth.decorators import login_required
 from security.two_factor_auth import generate_otp, verify_otp
 from django.contrib.auth import login, authenticate, logout
-from .forms import RegisterForm
+from .forms import RegisterForm,EditUserForm
 from django.urls import reverse
 
 
@@ -133,6 +133,21 @@ def view_logs(request):
             logs = file.readlines()[-50:]  # Get last 50 log entries for performance
 
     return render(request, "view_logs.html", {"logs": logs})
+
+@login_required
+def edit_user(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+
+    if request.method == "POST":
+        form = EditUserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect("manage_users")  # ✅ Redirect back to user management
+
+    else:
+        form = EditUserForm(instance=user)
+
+    return render(request, "edit_user.html", {"form": form, "user": user})
 
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:
