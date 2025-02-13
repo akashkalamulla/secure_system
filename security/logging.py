@@ -1,4 +1,9 @@
 import logging
+import os
+
+# Ensure logs directory exists
+LOG_DIR = 'logs'
+os.makedirs(LOG_DIR, exist_ok=True)
 
 # Configure security logger
 logger = logging.getLogger("security")
@@ -8,7 +13,7 @@ logger.setLevel(logging.WARNING)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
 # Log file
-file_handler = logging.FileHandler('logs/security.log')
+file_handler = logging.FileHandler(os.path.join(LOG_DIR, 'security.log'))
 file_handler.setFormatter(formatter)
 
 # Add handler to logger

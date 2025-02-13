@@ -8,6 +8,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 
+
 # Apply security settings to Django settings
 def apply_security_settings():
     settings.SECURE_BROWSER_XSS_FILTER = SECURE_BROWSER_XSS_FILTER

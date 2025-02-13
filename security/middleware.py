@@ -1,6 +1,6 @@
 from django.utils.deprecation import MiddlewareMixin
 from django.http import HttpResponseForbidden
-from django.conf import settings
+from django.middleware.csrf import get_token
 import logging
 
 logger = logging.getLogger("security")
@@ -17,6 +17,7 @@ class SecurityMiddleware(MiddlewareMixin):
         request.META["X-XSS-Protection"] = "1; mode=block"
         request.META["X-Content-Type-Options"] = "nosniff"
         request.META["X-Frame-Options"] = "DENY"
+        request.META["CSRF-Token"] = get_token(request)  # Enforce CSRF protection
 
     def process_exception(self, request, exception):
         """
