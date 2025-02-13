@@ -18,5 +18,5 @@ class SecurityMiddleware(MiddlewareMixin):
 
     def process_exception(self, request, exception):
         logger.warning(f"Security Exception: {exception}")
-        return HttpResponseForbidden("Forbidden: Security policy violation")
+        #return HttpResponseForbidden("Forbidden: Security policy violation")
 

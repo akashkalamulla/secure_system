@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from security.two_factor_auth import generate_otp, verify_otp
 from django.contrib.auth import login, authenticate, logout
 from .forms import RegisterForm
+from django.urls import reverse
 
 def home(request):
     return render(request, "home.html")
@@ -35,7 +36,7 @@ def login_view(request):
 
         try:
             user = CustomUser.objects.get(admin_id=admin_id)
-            authenticated_user = authenticate(username=user.username, password=password)
+            authenticated_user = authenticate(request, username=user.username, password=password)
 
             if authenticated_user:
                 login(request, authenticated_user)
@@ -86,6 +87,7 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, "register.html", {"form": form})
+
 @login_required
 def dashboard(request):
     if request.user.role == "admin":
@@ -95,21 +97,13 @@ def dashboard(request):
     else:
         return render(request, "guest_dashboard.html")
 
-def role_required(role):
-    """
-    Decorator to restrict access based on user role.
-    """
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            if request.user.is_authenticated and request.user.role == role:
-                return view_func(request, *args, **kwargs)
-            return redirect("access_denied")
-        return wrapper
-    return decorator
 
+def access_denied(request):
+    return render(request, "access_denied.html")
 @login_required
-@role_required("admin")
 def admin_dashboard(request):
+    if not request.user.is_superuser:
+        return redirect(reverse("access_denied"))  # ✅ Ensure reverse() is used
     return render(request, "admin_dashboard.html")
 
 @login_required
@@ -121,6 +115,11 @@ def editor_dashboard(request):
 @role_required("viewer")
 def viewer_dashboard(request):
     return render(request, "viewer_dashboard.html")
+
+@login_required
+def manage_users(request):
+    users = CustomUser.objects.all()  # Get all users
+    return render(request, "manage_users.html", {"users": users})
 
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:
