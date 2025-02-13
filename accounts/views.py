@@ -6,11 +6,14 @@ from django.contrib.auth import get_user_model
 from .models import CustomUser
 from django_ratelimit.decorators import ratelimit
 from axes.decorators import axes_dispatch
-from . import log_failed_login
+from security.logs import log_failed_login
 from django.contrib.auth.decorators import login_required
-from .security.two_factor_auth import generate_otp, verify_otp
+from security.two_factor_auth import generate_otp, verify_otp
 from django.contrib.auth import logout
 
+
+def home(request):
+    return render(request, "home.html")
 @axes_dispatch
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login_view(request):

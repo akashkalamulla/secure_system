@@ -1,9 +1,10 @@
 from django.urls import path
-from . import views
-from two_factor.urls import urlpatterns as tf_urls
-from django.urls import include
+from django.contrib import admin
+from django.urls import path, include
+from accounts.views import home
 
 urlpatterns = [
-    path('login/', views.login_view, name='login'),
-    path("account/", include(tf_urls)),
+    path("", home, name="home"),  # Default home page
+    path("admin/", admin.site.urls),
+    path("accounts/", include("accounts.urls")),
 ]

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Editor Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Welcome, {{ user.username }} (Editor)</h2>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Content Management</h5>
+            <p class="card-text">You can edit and update content.</p>
+            <a href="{% url 'edit_content' %}" class="btn btn-primary">Edit Content</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

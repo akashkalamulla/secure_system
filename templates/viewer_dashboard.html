@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Viewer Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Welcome, {{ user.username }} (Viewer)</h2>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">View Content</h5>
+            <p class="card-text">You can only view system content.</p>
+            <a href="{% url 'view_content' %}" class="btn btn-info">View Content</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

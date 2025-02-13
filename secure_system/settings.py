@@ -58,6 +58,11 @@ MIDDLEWARE = [
     'security.middleware.SecurityMiddleware'
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # Correct backend
+    'django.contrib.auth.backends.ModelBackend',  # Default Django backend
+]
+
 ROOT_URLCONF = 'secure_system.urls'
 
 TEMPLATES = [
