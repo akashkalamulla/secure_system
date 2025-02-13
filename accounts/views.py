@@ -8,6 +8,8 @@ from django_ratelimit.decorators import ratelimit
 from axes.decorators import axes_dispatch
 from . import log_failed_login
 from django.contrib.auth.decorators import login_required
+from .security.two_factor_auth import generate_otp, verify_otp
+from django.contrib.auth import logout
 
 @axes_dispatch
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
@@ -35,6 +37,31 @@ def login_view(request):
     return render(request, "login.html")
 
 @login_required
+def two_factor_auth(request):
+    """
+    View to handle Two-Factor Authentication (2FA).
+    """
+    if request.method == "POST":
+        otp = request.POST.get("otp")
+        if verify_otp(request.user, otp):
+            request.session["2fa_verified"] = True
+            return redirect("dashboard")
+        else:
+            return render(request, "two_factor.html", {"error": "Invalid OTP"})
+
+    generate_otp(request.user)
+    return render(request, "two_factor.html")
+
+@login_required
+def logout_view(request):
+    """
+    Logout function that clears the 2FA session.
+    """
+    request.session.pop("2fa_verified", None)
+    logout(request)
+    return redirect("login")
+
+@login_required
 def dashboard(request):
     if request.user.role == "admin":
         return render(request, "admin_dashboard.html")
@@ -42,6 +69,7 @@ def dashboard(request):
         return render(request, "employee_dashboard.html")
     else:
         return render(request, "guest_dashboard.html")
+
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:
         reader = csv.reader(file)

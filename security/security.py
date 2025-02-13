@@ -1,10 +1,18 @@
-from django.http import HttpResponse
+from django.conf import settings
 
-ALLOWED_ADMIN_IPS = ['192.168.1.100', '203.0.113.5']  # Example IPs
+# Security configurations
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = not settings.DEBUG
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
 
-def check_admin_ip(request):
-    user_ip = request.META.get('REMOTE_ADDR')
-    if request.user.is_authenticated and request.user.role == 'admin':
-        if user_ip not in ALLOWED_ADMIN_IPS:
-            return HttpResponse('Access Denied: Unauthorized IP', status=403)
-    return None
+# Apply security settings to Django settings
+def apply_security_settings():
+    settings.SECURE_BROWSER_XSS_FILTER = SECURE_BROWSER_XSS_FILTER
+    settings.SECURE_CONTENT_TYPE_NOSNIFF = SECURE_CONTENT_TYPE_NOSNIFF
+    settings.SECURE_SSL_REDIRECT = SECURE_SSL_REDIRECT
+    settings.SESSION_COOKIE_SECURE = SESSION_COOKIE_SECURE
+    settings.CSRF_COOKIE_SECURE = CSRF_COOKIE_SECURE
+    settings.X_FRAME_OPTIONS = X_FRAME_OPTIONS

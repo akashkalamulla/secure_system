@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'accounts',
     'axes',
     'two_factor',
+    'django_otp',
+    'django_otp.plugins.otp_email',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'axes.middleware.AxesMiddleware',
+    'security.middleware.SecurityMiddleware'
 ]
 
 ROOT_URLCONF = 'secure_system.urls'
