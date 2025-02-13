@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import login_view, register_view, logout_view, dashboard
+from .views import login_view, register_view, logout_view, dashboard, delete_user,add_user
 
 urlpatterns = [
     path("login/", views.login_view, name="login"),
@@ -10,4 +10,6 @@ urlpatterns = [
     path("dashboard/", views.dashboard, name="dashboard"),
     path("manage_users/", views.manage_users, name="manage_users"),  # ✅ Ensure this exists
     path("edit_user/<int:user_id>/", views.edit_user, name="edit_user"),  # ✅ Fix the missing edit_user URL
+    path('delete_user/<int:user_id>/', delete_user, name='delete_user'),
+    path('add_user/', add_user, name='add_user'),
 ]

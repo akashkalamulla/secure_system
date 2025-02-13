@@ -149,6 +149,24 @@ def edit_user(request, user_id):
 
     return render(request, "edit_user.html", {"form": form, "user": user})
 
+@login_required
+def delete_user(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    user.delete()
+    return redirect('manage_users')  # Make sure 'manage_users' exists in `urls.py`
+
+@login_required
+def add_user(request):
+    if request.method == "POST":
+        form = EditUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("manage_users")  # Ensure this URL exists
+    else:
+        form = EditUserForm()
+
+    return render(request, "add_user.html", {"form": form})
+
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:
         reader = csv.reader(file)
