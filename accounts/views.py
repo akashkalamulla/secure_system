@@ -70,6 +70,33 @@ def dashboard(request):
     else:
         return render(request, "guest_dashboard.html")
 
+def role_required(role):
+    """
+    Decorator to restrict access based on user role.
+    """
+    def decorator(view_func):
+        def wrapper(request, *args, **kwargs):
+            if request.user.is_authenticated and request.user.role == role:
+                return view_func(request, *args, **kwargs)
+            return redirect("access_denied")
+        return wrapper
+    return decorator
+
+@login_required
+@role_required("admin")
+def admin_dashboard(request):
+    return render(request, "admin_dashboard.html")
+
+@login_required
+@role_required("editor")
+def editor_dashboard(request):
+    return render(request, "editor_dashboard.html")
+
+@login_required
+@role_required("viewer")
+def viewer_dashboard(request):
+    return render(request, "viewer_dashboard.html")
+
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:
         reader = csv.reader(file)

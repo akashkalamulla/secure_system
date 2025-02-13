@@ -12,6 +12,17 @@ class CustomUser(AbstractUser):
     admin_id = models.CharField(max_length=10, unique=True, blank=True, null=True)
     employee_id = models.CharField(max_length=10, unique=True, blank=True, null=True)
 
+    def has_permission(self, permission):
+        """
+        Checks if the user has the required permission.
+        """
+        role_permissions = {
+            "admin": ["add", "edit", "delete", "view"],
+            "editor": ["edit", "view"],
+            "viewer": ["view"],
+        }
+        return permission in role_permissions.get(self.role, [])
+
     def save(self, *args, **kwargs):
         if self.role == "admin" and not self.admin_id:
             last_admin = CustomUser.objects.filter(role="admin").order_by('-id').first()

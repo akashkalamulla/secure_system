@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.conf import settings
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("security")
 
 def export_security_logs():
     logs_path = os.path.join(settings.BASE_DIR, 'logs/security.log')
