@@ -1,21 +1,33 @@
 import csv
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
 from .forms import LoginForm
 from django.contrib.auth import get_user_model
-from .models import CustomUser
+from accounts.models import CustomUser
 from django_ratelimit.decorators import ratelimit
 from axes.decorators import axes_dispatch
+from django.views.decorators.csrf import csrf_exempt
 from security.logs import log_failed_login
 from django.contrib.auth.decorators import login_required
 from security.two_factor_auth import generate_otp, verify_otp
-from django.contrib.auth import logout
-
+from django.contrib.auth import login, authenticate, logout
+from .forms import RegisterForm
 
 def home(request):
     return render(request, "home.html")
+def role_required(role):
+    """
+    Decorator to restrict access based on user role.
+    """
+    def decorator(view_func):
+        def wrapper(request, *args, **kwargs):
+            if request.user.is_authenticated and request.user.role == role:
+                return view_func(request, *args, **kwargs)
+            return redirect("access_denied")
+        return wrapper
+    return decorator
+@csrf_exempt
 @axes_dispatch
-@ratelimit(key="ip", rate="5/m", method="POST", block=True)
+#@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login_view(request):
     if request.method == "POST":
         admin_id = request.POST.get("admin_id")
@@ -64,6 +76,16 @@ def logout_view(request):
     logout(request)
     return redirect("login")
 
+def register_view(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("dashboard")  # Redirect to the dashboard after registration
+    else:
+        form = RegisterForm()
+    return render(request, "register.html", {"form": form})
 @login_required
 def dashboard(request):
     if request.user.role == "admin":

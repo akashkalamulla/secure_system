@@ -62,14 +62,13 @@ AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesStandaloneBackend',  # Correct backend
     'django.contrib.auth.backends.ModelBackend',  # Default Django backend
 ]
-
+AUTH_USER_MODEL = 'accounts.CustomUser'
 ROOT_URLCONF = 'secure_system.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,10 +98,10 @@ DATABASES = {
 SECURITY_SETTINGS = {
     "SECURE_BROWSER_XSS_FILTER": True,
     "SECURE_CONTENT_TYPE_NOSNIFF": True,
-    "SECURE_SSL_REDIRECT": not settings.DEBUG,
-    "SESSION_COOKIE_SECURE": True,
-    "CSRF_COOKIE_SECURE": True,
-    "X_FRAME_OPTIONS": 'DENY',
+    "SECURE_SSL_REDIRECT": False,
+    "SESSION_COOKIE_SECURE": False,
+    "CSRF_COOKIE_SECURE": False,
+    "X_FRAME_OPTIONS": "SAMEORIGIN",
 }
 # Apply security settings to Django settings
 for key, value in SECURITY_SETTINGS.items():
