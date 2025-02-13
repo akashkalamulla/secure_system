@@ -10,4 +10,5 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),  # ✅ User Authentication URLs
     path("admin_dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("manage_users/", views.manage_users, name="manage_users"),
+    path("view_logs/", views.view_logs, name="view_logs"),
 ]

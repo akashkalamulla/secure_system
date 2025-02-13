@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}View Security Logs{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Security Logs</h2>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    Latest Security Events
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for log in logs %}
+                        <li class="list-group-item">{{ log }}</li>
+                        {% empty %}
+                        <li class="list-group-item text-center">No logs available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary mt-3">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

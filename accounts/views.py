@@ -1,4 +1,5 @@
 import csv
+import os
 from django.shortcuts import render, redirect
 from .forms import LoginForm
 from django.contrib.auth import get_user_model
@@ -12,6 +13,7 @@ from security.two_factor_auth import generate_otp, verify_otp
 from django.contrib.auth import login, authenticate, logout
 from .forms import RegisterForm
 from django.urls import reverse
+
 
 def home(request):
     return render(request, "home.html")
@@ -120,6 +122,17 @@ def viewer_dashboard(request):
 def manage_users(request):
     users = CustomUser.objects.all()  # Get all users
     return render(request, "manage_users.html", {"users": users})
+
+@login_required
+def view_logs(request):
+    logs_path = os.path.join("logs", "security.log")  # ✅ Ensure correct log file path
+
+    logs = []
+    if os.path.exists(logs_path):
+        with open(logs_path, "r") as file:
+            logs = file.readlines()[-50:]  # Get last 50 log entries for performance
+
+    return render(request, "view_logs.html", {"logs": logs})
 
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:
