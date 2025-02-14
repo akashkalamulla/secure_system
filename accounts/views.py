@@ -1,5 +1,7 @@
 import csv
 import os
+from urllib import request
+
 from django.shortcuts import render, redirect,get_object_or_404
 from .forms import LoginForm
 from django.contrib.auth import get_user_model
@@ -31,26 +33,24 @@ def role_required(role):
     return decorator
 @csrf_exempt
 @axes_dispatch
-#@ratelimit(key="ip", rate="5/m", method="POST", block=True)
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login_view(request):
     if request.method == "POST":
         admin_id = request.POST.get("admin_id")
         password = request.POST.get("password")
 
-        try:
-            user = CustomUser.objects.get(admin_id=admin_id)
+        # Use `filter().first()` instead of `get()`
+        user = CustomUser.objects.filter(admin_id=admin_id).first()
+
+        if user:
             authenticated_user = authenticate(request, username=user.username, password=password)
 
             if authenticated_user:
                 login(request, authenticated_user)
-                return redirect("admin_dashboard")
-            if not authenticated_user:
-                log_failed_login(admin_id)
-                return render(request, "login.html", {"error": "Invalid credentials"})
+                return redirect("admin_dashboard")  # Ensure this URL exists
             else:
                 return render(request, "login.html", {"error": "Invalid credentials"})
-
-        except CustomUser.DoesNotExist:
+        else:
             return render(request, "login.html", {"error": "Invalid Admin ID"})
 
     return render(request, "login.html")
@@ -66,10 +66,10 @@ def two_factor_auth(request):
             request.session["2fa_verified"] = True
             return redirect("dashboard")
         else:
-            return render(request, "two_factor.html", {"error": "Invalid OTP"})
+            return render(request, "two_factor.html", {"error": "Invalid OTP. Please try again."})
 
-    generate_otp(request.user)
-    return render(request, "two_factor.html")
+    generate_otp(request.user)  # Ensure OTP is generated for the user
+    return render(request, "two_factor.html")  # Ensure return is inside function
 
 @login_required
 def logout_view(request):

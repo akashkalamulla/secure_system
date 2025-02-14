@@ -139,9 +139,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 1  # Lockout time in hours
-AXES_RESET_ON_SUCCESS = True  # Reset lockout after successful login
+AXES_FAILURE_LIMIT = 20  # Default is 5, increasing to 10 attempts
+AXES_COOLOFF_TIME = 30  # Number of minutes before resetting failed attempts
+AXES_RESET_ON_SUCCESS = True  # Reset counter after successful login
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
