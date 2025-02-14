@@ -13,7 +13,8 @@ from security.two_factor_auth import generate_otp, verify_otp
 from django.contrib.auth import login, authenticate, logout
 from .forms import RegisterForm,EditUserForm
 from django.urls import reverse
-
+from django.contrib.auth.hashers import make_password
+from axes.utils import reset
 
 def home(request):
     return render(request, "home.html")
@@ -79,15 +80,28 @@ def logout_view(request):
     logout(request)
     return redirect("login")
 
+
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("dashboard")  # Redirect to the dashboard after registration
-    else:
-        form = RegisterForm()
+            user = form.save(commit=False)
+            user.password = make_password(form.cleaned_data["password"])
+            user.save()
+
+            # ✅ Fix: Pass `request` explicitly to authenticate
+            authenticated_user = authenticate(
+                request=request, username=user.username, password=form.cleaned_data["password"]
+            )
+
+            if authenticated_user:
+                reset(request)  # ✅ Reset failed login attempts for this user
+                login(request, authenticated_user)
+                return redirect("admin_dashboard")
+
+        return render(request, "register.html", {"form": form})
+
+    form = RegisterForm()
     return render(request, "register.html", {"form": form})
 
 @login_required
@@ -101,7 +115,7 @@ def dashboard(request):
 
 
 def access_denied(request):
-    return render(request, "access_denied.html")
+    return render(request, "access_denied.html", {"error": "You do not have permission to access this page."})
 @login_required
 def admin_dashboard(request):
     if not request.user.is_superuser:

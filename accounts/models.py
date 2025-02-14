@@ -23,17 +23,32 @@ class CustomUser(AbstractUser):
         }
         return permission in role_permissions.get(self.role, [])
 
+    def generate_unique_id(self, prefix):
+        """
+        Generates a unique ID for users based on their role.
+        Ensures there are no duplicates.
+        """
+        last_user = CustomUser.objects.filter(employee_id__startswith=prefix).order_by('-id').first()
+        new_id = f"{prefix}001" if not last_user else f"{prefix}{str(int(last_user.employee_id[1:]) + 1).zfill(3)}"
+
+        # Ensure uniqueness by checking the database
+        while CustomUser.objects.filter(employee_id=new_id).exists():
+            new_id = f"{prefix}{str(int(new_id[1:]) + 1).zfill(3)}"
+
+        return new_id
+
     def save(self, *args, **kwargs):
+        """
+        Ensures `admin_id` and `employee_id` are generated uniquely.
+        """
         if self.role == "admin" and not self.admin_id:
             last_admin = CustomUser.objects.filter(role="admin").order_by('-id').first()
             self.admin_id = f"A{str(last_admin.id + 1).zfill(3)}" if last_admin else "A001"
 
         if self.role == "employee" and not self.employee_id:
-            last_employee = CustomUser.objects.filter(role="employee").order_by('-id').first()
-            self.employee_id = f"E{str(last_employee.id + 1).zfill(3)}" if last_employee else "E001"
+            self.employee_id = self.generate_unique_id("E")
 
         if self.role == "guest" and not self.employee_id:
-            last_guest = CustomUser.objects.filter(role="guest").order_by('-id').first()
-            self.employee_id = f"G{str(last_guest.id + 1).zfill(3)}" if last_guest else "G001"
+            self.employee_id = self.generate_unique_id("G")
 
         super().save(*args, **kwargs)

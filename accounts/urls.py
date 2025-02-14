@@ -12,4 +12,5 @@ urlpatterns = [
     path("edit_user/<int:user_id>/", views.edit_user, name="edit_user"),  # ✅ Fix the missing edit_user URL
     path('delete_user/<int:user_id>/', delete_user, name='delete_user'),
     path('add_user/', add_user, name='add_user'),
+    path("access_denied/", views.access_denied, name="access_denied"),  # ✅ Ensure this URL exists
 ]
