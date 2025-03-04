@@ -98,9 +98,9 @@ DATABASES = {
 SECURITY_SETTINGS = {
     "SECURE_BROWSER_XSS_FILTER": True,
     "SECURE_CONTENT_TYPE_NOSNIFF": True,
-    "SECURE_SSL_REDIRECT": False,
-    "SESSION_COOKIE_SECURE": False,
-    "CSRF_COOKIE_SECURE": False,
+    "SECURE_SSL_REDIRECT": True,
+    "SESSION_COOKIE_SECURE": True,
+    "CSRF_COOKIE_SECURE": True,
     "X_FRAME_OPTIONS": "SAMEORIGIN",
 }
 # Apply security settings to Django settings
@@ -141,14 +141,22 @@ USE_TZ = True
 
 AXES_FAILURE_LIMIT = 20  # Default is 5, increasing to 10 attempts
 AXES_COOLOFF_TIME = 30  # Number of minutes before resetting failed attempts
-AXES_RESET_ON_SUCCESS = True  # Reset counter after successful login
+AXES_RESET_ON_SUCCESS = False  # Reset counter after successful login
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# URL to access static files
+STATIC_URL = '/static/'
+
+# Location where static files will be collected (change this for production)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional locations where Django will look for static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Your project's static folder
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
