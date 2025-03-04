@@ -142,6 +142,22 @@
                   <label class="form-label" for="password">Password</label>
                 </div>
 
+                <!-- Role Selection Dropdown -->
+                <div class="form-outline mb-4">
+                  <label class="form-label" for="role">Select your role</label>
+                  <select name="role" id="role" class="form-control" required>
+                    <option value="employee">Employee</option>
+                    <option value="guest">Guest</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <!-- Email Input (for Guests only) -->
+                <div class="form-outline mb-4" id="email-field" style="display:none;">
+                  <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required />
+                  <label class="form-label" for="email">Email</label>
+                </div>
+
                 <!-- Submit Button -->
                 <button type="submit" class="btn btn-primary btn-block mb-4">
                   Login
@@ -156,7 +172,21 @@
       </div>
     </div>
   </div>
+  <script>
+    // Show email input if "Guest" is selected
+    document.getElementById("role").addEventListener("change", function() {
+      var role = this.value;
+      var emailField = document.getElementById("email-field");
+
+      if (role === "guest") {
+        emailField.style.display = "block";
+      } else {
+        emailField.style.display = "none";
+      }
+    });
+  </script>
 </section>
+
 <!-- Section: Design Block -->
   </main>
 
