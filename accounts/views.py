@@ -3,7 +3,7 @@ import os
 from urllib import request
 
 from django.shortcuts import render, redirect,get_object_or_404
-from .forms import LoginForm
+from .forms import LoginForm, UserForm
 from django.contrib.auth import get_user_model
 from accounts.models import CustomUser
 from django_ratelimit.decorators import ratelimit
@@ -17,6 +17,7 @@ from .forms import RegisterForm,EditUserForm
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
 from axes.utils import reset
+from django.contrib import messages
 
 def home(request):
     return render(request, "home.html")
@@ -36,23 +37,20 @@ def role_required(role):
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login_view(request):
     if request.method == "POST":
-        admin_id = request.POST.get("admin_id")
-        password = request.POST.get("password")
-
-        # Use `filter().first()` instead of `get()`
-        user = CustomUser.objects.filter(admin_id=admin_id).first()
-
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
         if user:
-            authenticated_user = authenticate(request, username=user.username, password=password)
-
-            if authenticated_user:
-                login(request, authenticated_user)
-                return redirect("admin_dashboard")  # Ensure this URL exists
+            login(request, user)
+            if user.role == 'admin':
+                return redirect('admin_dashboard')  # Admin-specific dashboard
+            elif user.role == 'employee':
+                return redirect('employee_dashboard')  # Employee-specific dashboard
             else:
-                return render(request, "login.html", {"error": "Invalid credentials"})
+                return redirect('guest_dashboard')  # Guest-specific dashboard
         else:
-            return render(request, "login.html", {"error": "Invalid Admin ID"})
-
+            messages.error(request, "Invalid credentials.")
+            return render(request, "login.html")
     return render(request, "login.html")
 
 @login_required
@@ -128,9 +126,14 @@ def editor_dashboard(request):
     return render(request, "editor_dashboard.html")
 
 @login_required
+def employee_dashboard(request):
+    return render(request, 'employee_dashboard.html')
+
+@login_required
 @role_required("viewer")
 def viewer_dashboard(request):
     return render(request, "viewer_dashboard.html")
+
 
 @login_required
 def manage_users(request):
@@ -171,15 +174,21 @@ def delete_user(request, user_id):
 
 @login_required
 def add_user(request):
-    if request.method == "POST":
-        form = EditUserForm(request.POST)
+    if request.method == 'POST':
+        form = UserForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("manage_users")  # Ensure this URL exists
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])  # Password is hashed
+            user.save()
+            messages.success(request, "User created successfully!")
+            return redirect('user_list')  # Redirect to the user list page
     else:
-        form = EditUserForm()
+        form = UserForm()
+    return render(request, 'add_user.html', {'form': form})
 
-    return render(request, "add_user.html", {"form": form})
+def user_list(request):
+    users = CustomUser.objects.all()
+    return render(request, 'user_list.html', {'users': users})
 
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:

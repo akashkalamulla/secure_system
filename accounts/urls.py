@@ -13,4 +13,6 @@ urlpatterns = [
     path('delete_user/<int:user_id>/', delete_user, name='delete_user'),
     path('add_user/', add_user, name='add_user'),
     path("access_denied/", views.access_denied, name="access_denied"),  # ✅ Ensure this URL exists
+    path('user_list/', views.user_list, name='user_list'),  # Make sure this exists in views.py
+    path('employee_dashboard/', views.employee_dashboard, name='employee_dashboard'),  # Ensure this is here
 ]

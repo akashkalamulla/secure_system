@@ -29,7 +29,7 @@
   <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 
-<body class="bg-light {% block body_class %}{% endblock %}">
+<body class="index-page">
 
   <!-- Header -->
   <header id="header" class="header d-flex align-items-center fixed-top">
@@ -58,10 +58,10 @@
     
     </div>
   </header>
-
   <!-- Main Content -->
   <main class="container mt-4">
-    {% block content %}{% endblock %}
+    {% block content %}
+    {% endblock %}
   </main>
 
   <!-- Footer -->
