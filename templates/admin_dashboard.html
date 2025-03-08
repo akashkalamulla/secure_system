@@ -4,6 +4,24 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
+    <h1>Welcome, Admin</h1>
+    <h2>Assigned Tasks</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>{{ task.name }} - Assigned to: {{ task.user.username }} - Due: {{ task.due_date }} - Status: {{ task.status }}</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <h2>Assigned Notifications</h2>
+    <ul>
+        {% for notification in notifications %}
+            <li>{{ notification.message }} - Sent to: {{ notification.user.username }} - Date: {{ notification.date }}</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <a href="{% url 'create_task' %}">Create New Task</a> | 
+    <a href="{% url 'create_notification' %}">Create New Notification</a>
+    
 <div class="container mt-5">
     <div class="card shadow-lg border-0">
         <div class="card-body text-center">

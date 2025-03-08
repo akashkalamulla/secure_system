@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ user.username }}</h1>
+    <p>Your role: {{ user.role }}</p>
+    <p>Your email: {{ user.email }}</p>
+
+    <!-- File Upload Section -->
+    <h2>Upload File</h2>
+    <form action="{% url 'upload_file' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" required>
+        <button type="submit">Upload File</button>
+    </form>
+
+    <h3>Uploaded Files</h3>
+    <ul>
+        {% for file in uploaded_files %}
+            <li>{{ file.name }} - <a href="{{ file.url }}">Download</a></li>
+        {% endfor %}
+    </ul>
+
+    <!-- Password Change Section -->
+    <h2><a href="{% url 'change_password' %}">Change Your Password</a></h2>
+
+    <!-- Assigned Tasks Section -->
+    <h2>Your Tasks</h2>
+    {% if tasks %}
+        <ul>
+            {% for task in tasks %}
+                <li>
+                    <strong>Task Name:</strong> {{ task.name }}<br>
+                    <strong>Description:</strong> {{ task.description }}<br>
+                    <strong>Due Date:</strong> {{ task.due_date }}<br>
+                    <strong>Status:</strong> {{ task.get_status_display }}<br>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no tasks assigned.</p>
+    {% endif %}
+
+    <!-- Notifications Section (Optional) -->
+    <h2>Notifications</h2>
+    <ul>
+        {% for notification in notifications %}
+            <li>{{ notification.message }} - {{ notification.date }}</li>
+        {% empty %}
+            <p>No new notifications.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>

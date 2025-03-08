@@ -15,4 +15,8 @@ urlpatterns = [
     path("access_denied/", views.access_denied, name="access_denied"),  # ✅ Ensure this URL exists
     path('user_list/', views.user_list, name='user_list'),  # Make sure this exists in views.py
     path('employee_dashboard/', views.employee_dashboard, name='employee_dashboard'),  # Ensure this is here
+    path('change-password/', views.change_password, name='change_password'),
+    path('upload-file/', views.upload_file, name='upload_file'),
+    path('create-task/', views.create_task, name='create_task'),
+    path('create-notification/', views.create_notification, name='create_notification'),
 ]

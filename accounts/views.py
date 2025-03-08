@@ -2,15 +2,16 @@ import csv
 import os
 from urllib import request
 
+from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect,get_object_or_404
-from .forms import LoginForm, UserForm
-from django.contrib.auth import get_user_model
-from accounts.models import CustomUser
+from .forms import LoginForm, UserForm, FileUploadForm, TaskForm, NotificationForm
+from django.contrib.auth import get_user_model, update_session_auth_hash
+from accounts.models import CustomUser, UploadedFile, Task, Notification
 from django_ratelimit.decorators import ratelimit
 from axes.decorators import axes_dispatch
 from django.views.decorators.csrf import csrf_exempt
 from security.logs import log_failed_login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from security.two_factor_auth import generate_otp, verify_otp
 from django.contrib.auth import login, authenticate, logout
 from .forms import RegisterForm,EditUserForm
@@ -19,6 +20,9 @@ from django.contrib.auth.hashers import make_password
 from axes.utils import reset
 from django.contrib import messages
 
+
+# Get the custom user model
+User = get_user_model()
 def home(request):
     return render(request, "home.html")
 def role_required(role):
@@ -115,10 +119,14 @@ def dashboard(request):
 def access_denied(request):
     return render(request, "access_denied.html", {"error": "You do not have permission to access this page."})
 @login_required
+@user_passes_test(lambda u: u.role == 'admin')
 def admin_dashboard(request):
-    if not request.user.is_superuser:
-        return redirect(reverse("access_denied"))  # ✅ Ensure reverse() is used
-    return render(request, "admin_dashboard.html")
+    tasks = Task.objects.all()
+    notifications = Notification.objects.all()
+    return render(request, 'admin_dashboard.html', {
+        'tasks': tasks,
+        'notifications': notifications
+    })
 
 @login_required
 @role_required("editor")
@@ -127,7 +135,16 @@ def editor_dashboard(request):
 
 @login_required
 def employee_dashboard(request):
-    return render(request, 'employee_dashboard.html')
+    user = request.user
+    uploaded_files = UploadedFile.objects.filter(user=user)  # If you have this model for file uploads
+    tasks = Task.objects.filter(user=user)  # Query tasks for the logged-in user
+    notifications = Notification.objects.filter(user=user)  # Query notifications for the logged-in user
+    return render(request, 'employee_dashboard.html', {
+        'user': user,
+        'uploaded_files': uploaded_files,
+        'tasks': tasks,
+        'notifications': notifications
+    })
 
 @login_required
 @role_required("viewer")
@@ -189,6 +206,59 @@ def add_user(request):
 def user_list(request):
     users = CustomUser.objects.all()
     return render(request, 'user_list.html', {'users': users})
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)  # Keeps the user logged in
+            return redirect('employee_dashboard')  # Redirect to the dashboard after successful password change
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})
+
+@login_required
+def upload_file(request):
+    if request.method == 'POST':
+        form = FileUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = form.cleaned_data['file']
+            # Save the uploaded file (e.g., in 'uploads/' folder)
+            with open(f'uploads/{uploaded_file.name}', 'wb') as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+            return redirect('employee_dashboard')
+    else:
+        form = FileUploadForm()
+    return render(request, 'upload_file.html', {'form': form})
+
+@user_passes_test(lambda u: u.role == 'admin')
+def create_task(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            form.save()  # Save the task to the database
+            return redirect('admin_dashboard')  # Redirect to the admin dashboard after saving the task
+        else:
+            # Optionally, print form errors for debugging
+            print(form.errors)
+    else:
+        form = TaskForm()
+    return render(request, 'create_task.html', {'form': form})
+
+# Ensure only admin users can access this view
+@user_passes_test(lambda u: u.role == 'admin')
+def create_notification(request):
+    if request.method == 'POST':
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            form.save()  # Save the notification to the database
+            return redirect('admin_dashboard')  # Redirect to the admin dashboard or notification list
+    else:
+        form = NotificationForm()
+    return render(request, 'create_notification.html', {'form': form})
 
 def bulk_user_upload(csv_file):
     with open(csv_file, 'r') as file:

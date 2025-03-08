@@ -1,5 +1,8 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
 from django.db import models
+
+from secure_system import settings
+
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -52,3 +55,28 @@ class CustomUser(AbstractUser):
             self.employee_id = self.generate_unique_id("G")
 
         super().save(*args, **kwargs)
+
+class UploadedFile(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+# Task Model
+class Task(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField(default="No description")  # Task description field
+    due_date = models.DateTimeField()
+    status = models.CharField(max_length=50, choices=[('Assign', 'Assign'),('Pending', 'Pending'), ('Completed', 'Completed')])
+
+    def __str__(self):
+        return self.name
+
+# Notification Model
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    message = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username} at {self.date}"

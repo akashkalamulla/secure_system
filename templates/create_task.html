@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Task</title>
+</head>
+<body>
+    <h1>Create Task</h1>
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Render user selection field -->
+        <label for="{{ form.user.id_for_label }}">Assigned To</label>
+        {{ form.user }}
+
+        <!-- Task Name -->
+        <label for="{{ form.name.id_for_label }}">Task Name</label>
+        {{ form.name }}
+
+        <!-- Task Description -->
+        <label for="{{ form.description.id_for_label }}">Task Description</label>
+        {{ form.description }}
+
+        <!-- Due Date (Date picker) -->
+        <label for="{{ form.due_date.id_for_label }}">Due Date</label>
+        <input type="date" id="{{ form.due_date.id_for_label }}" name="due_date" required>
+
+        <!-- Status -->
+        <label for="{{ form.status.id_for_label }}">Status</label>
+        {{ form.status }}
+
+        <button type="submit">Create Task</button>
+    </form>
+
+    <br>
+    <a href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+</body>
+</html>

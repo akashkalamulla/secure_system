@@ -1,12 +1,18 @@
+import os
+
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from accounts.models import CustomUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.models import User
+
+from accounts.models import CustomUser, Task, Notification
 from django.contrib.auth.password_validation import validate_password
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
+User = get_user_model()
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(
@@ -76,3 +82,43 @@ class UserForm(forms.ModelForm):
         if len(password) < 12:
             raise forms.ValidationError("Password must be at least 12 characters long.")
         return password
+
+class EmployeePasswordChangeForm(PasswordChangeForm):
+    class Meta:
+        model = User
+        fields = ['password']
+
+class FileUploadForm(forms.Form):
+    file = forms.FileField()
+
+    def clean_file(self):
+        uploaded_file = self.cleaned_data['file']
+        # Limit file size (e.g., 5MB)
+        if uploaded_file.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("File size should be less than 5MB.")
+        # Only allow certain file types (PDF, JPG, PNG)
+        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+        extension = os.path.splitext(uploaded_file.name)[1]
+        if extension.lower() not in allowed_extensions:
+            raise forms.ValidationError("Only PDF, JPG, and PNG files are allowed.")
+        return uploaded_file
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['user', 'name', 'description', 'due_date', 'status']  # Include name and description
+
+    # Custom validation (e.g., ensure the user is an employee)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = User.objects.filter(role='employee')  # Only show employees in the dropdown
+
+class NotificationForm(forms.ModelForm):
+    class Meta:
+        model = Notification
+        fields = ['user', 'message']
+
+    # Custom validation (e.g., ensure the user is an employee)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = User.objects.filter(role='employee')  # Only show employees in the dropdown
